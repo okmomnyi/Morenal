@@ -1,189 +1,244 @@
-# TailAdmin Next.js - Free Next.js Tailwind Admin Dashboard Template
+# 🛍️ MORENAL - E-Commerce Platform
 
-TailAdmin is a free and open-source admin dashboard template built on **Next.js and Tailwind CSS** providing developers with everything they need to create a feature-rich and data-driven: back-end, dashboard, or admin panel solution for any sort of web project.
+**Elegance in every Purchase**
 
-![TailAdmin - Next.js Dashboard Preview](./banner.png)
+Modern e-commerce platform with admin dashboard and customer storefront built with Next.js 16, React, TypeScript, Firebase, and Tailwind CSS.
 
-With TailAdmin Next.js, you get access to all the necessary dashboard UI components, elements, and pages required to build a high-quality and complete dashboard or admin panel. Whether you're building a dashboard or admin panel for a complex web application or a simple website.
+## 🚀 Quick Start
 
-TailAdmin utilizes the powerful features of **Next.js 16** and common features of Next.js such as server-side rendering (SSR), static site generation (SSG), and seamless API route integration. Combined with the advancements of **React 19** and the robustness of **TypeScript**, TailAdmin is the perfect solution to help get your project up and running quickly.
-
-## Overview
-
-TailAdmin provides essential UI components and layouts for building feature-rich, data-driven admin dashboards and control panels. It's built on:
-
-* Next.js 16.x
-* React 19
-* TypeScript
-* Tailwind CSS V4
-
-### Quick Links
-
-* [✨ Visit Website](https://tailadmin.com)
-* [📄 Documentation](https://tailadmin.com/docs)
-* [⬇️ Download](https://tailadmin.com/download)
-* [🖌️ Figma Design File (Community Edition)](https://www.figma.com/community/file/1463141366275764364)
-* [⚡ Get PRO Version](https://tailadmin.com/pricing)
-
-### Demos
-
-* [Free Version](https://nextjs-free-demo.tailadmin.com)
-* [Pro Version](https://nextjs-demo.tailadmin.com)
-
-### Other Versions
-
-* [HTML Version](https://github.com/TailAdmin/tailadmin-free-tailwind-dashboard-template)
-* [React Version](https://github.com/TailAdmin/free-react-tailwind-admin-dashboard)
-* [Vue.js Version](https://github.com/TailAdmin/vue-tailwind-admin-dashboard)
-
-## Installation
-
-### Prerequisites
-
-To get started with TailAdmin, ensure you have the following prerequisites installed and set up:
-
-* Node.js 18.x or later (recommended to use Node.js 20.x or later)
-
-### Cloning the Repository
-
-Clone the repository using the following command:
-
+### 1. Install & Setup
 ```bash
-git clone https://github.com/TailAdmin/free-nextjs-admin-dashboard.git
+npm install
+cp .env.example .env.local
+npm run dev
 ```
 
-> Windows Users: place the repository near the root of your drive if you face issues while cloning.
+### 2. Environment Variables
+```env
+# Firebase Configuration
+NEXT_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
+NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abc123
 
-1. Install dependencies:
+# Admin Access (comma-separated emails)
+NEXT_PUBLIC_ADMIN_EMAILS=admin@example.com
 
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+# ImgBB Image Hosting (free at https://api.imgbb.com/)
+NEXT_PUBLIC_IMGBB_API_KEY=your_imgbb_api_key
+```
 
-   > Use `--legacy-peer-deps` flag if you face peer-dependency error during installation.
+### 3. Firebase Setup
+1. Create project at [Firebase Console](https://console.firebase.google.com/)
+2. Enable Authentication (Email/Password + Google)
+3. Create Firestore database
+4. Deploy security rules:
 
-2. Start the development server:
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /orders/{orderId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+  }
+}
+```
 
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+## 🎯 Key Features
 
-## Components
+### Customer Storefront
+- **Homepage:** Hero carousel, featured products
+- **Shop:** Product catalog with filters
+- **Cart & Checkout:** Full shopping experience
+- **User Accounts:** Profile and order history
+- **Authentication:** Email/password + Google OAuth
 
-TailAdmin is a pre-designed starting point for building a web-based dashboard using Next.js and Tailwind CSS. The template includes:
+### Admin Management (Stealth Access)
+- **Secret Login:** `/management-login` (invisible to customers)
+- **Dashboard:** Analytics and overview
+- **Products:** Add, edit, delete products
+- **Orders:** Manage customer orders
+- **Hero Images:** Upload carousel images via ImgBB
+- **Sample Data:** Seed products and images for testing
 
-* Sophisticated and accessible sidebar
-* Data visualization components
-* Profile management and custom 404 page
-* Tables and Charts(Line and Bar)
-* Authentication forms and input elements
-* Alerts, Dropdowns, Modals, Buttons and more
-* Can't forget Dark Mode 🕶️
+### Technical Stack
+- **Frontend:** Next.js 16, React 19, TypeScript
+- **Styling:** Tailwind CSS v4
+- **Database:** Firebase Firestore
+- **Auth:** Firebase Authentication
+- **Images:** ImgBB CDN hosting
+- **State:** React Context + Hooks
 
-All components are built with React and styled using Tailwind CSS for easy customization.
+## 🔧 Admin Setup
 
-## Feature Comparison
+### First-Time Admin Access
+1. **Create Account:** Visit `/auth/signup`
+2. **Add Admin Email:** Add your email to `NEXT_PUBLIC_ADMIN_EMAILS` in `.env.local`
+3. **Restart Server:** `npm run dev`
+4. **Access Management:** Visit `/management-login`
 
-### Free Version
+### Seed Sample Data
+1. Visit `/admin/test-setup`
+2. Click "Seed Products" (adds 4 sample products)
+3. Click "Seed Hero Images" (adds 3 carousel images)
 
-* 1 Unique Dashboard
-* 30+ dashboard components
-* 50+ UI elements
-* Basic Figma design files
-* Community support
+## 🌐 Available URLs
 
-### Pro Version
+### Customer Pages
+- `/` - Homepage with hero section
+- `/shop` - Product catalog
+- `/about` - Company information
+- `/cart` - Shopping cart
+- `/checkout` - Purchase flow
+- `/account` - User profile (requires login)
+- `/auth/signin` - Customer login
+- `/auth/signup` - Create account
 
-* 7 Unique Dashboards: Analytics, Ecommerce, Marketing, CRM, SaaS, Stocks, Logistics (more coming soon)
-* 500+ dashboard components and UI elements
-* Complete Figma design file
-* Email support
+### Admin Pages (Stealth)
+- `/management-login` - **Secret admin access**
+- `/admin/dashboard` - Analytics overview
+- `/admin/products` - Product management
+- `/admin/orders` - Order management
+- `/admin/hero-images` - Carousel management
+- `/admin/test-setup` - Sample data seeding
 
-To learn more about pro version features and pricing, visit our [pricing page](https://tailadmin.com/pricing).
+## 💻 Usage Examples
 
-## Changelog
+### Authentication
+```tsx
+import { useAuth } from "@/context/AuthContext";
+import { useSignIn, useSignOut } from "@/hooks/useFirebaseAuth";
 
-### Version 2.1.0 - [November 15, 2025]
+function MyComponent() {
+  const { user, isAdmin } = useAuth();
+  const { signIn } = useSignIn();
+  const { signOut } = useSignOut();
 
-* Updated to Next.js 16.x
-* Fixed all reported minor bugs
+  return (
+    <div>
+      {user ? (
+        <>
+          <p>Welcome, {user.email}</p>
+          {isAdmin && <p>Admin Access</p>}
+          <button onClick={signOut}>Sign Out</button>
+        </>
+      ) : (
+        <button onClick={() => signIn(email, password)}>Sign In</button>
+      )}
+    </div>
+  );
+}
+```
 
-### Version 2.0.2 - [March 25, 2025]
+### Firestore Operations
+```tsx
+import { setDocument, getDocument, queryDocuments, collections } from "@/lib/firebase";
 
-* Upgraded to Next.js 16.x for [CVE-2025-29927](https://nextjs.org/blog/cve-2025-29927) concerns
-* Included overrides vectormap for packages to prevent peer dependency errors during installation.
-* Migrated from react-flatpickr to flatpickr package for React 19 support
+// Create product
+await setDocument(collections.products, "product-id", {
+  name: "Product Name",
+  price: 99.99,
+  image: "https://i.ibb.co/xxxxx/image.jpg"
+});
 
-### Version 2.0.1 - [February 27, 2025]
+// Get product
+const product = await getDocument(collections.products, "product-id");
 
-#### Update Overview
+// Query products
+const products = await queryDocuments(collections.products, [
+  createConstraints.where("category", "==", "electronics"),
+  createConstraints.orderBy("price", "desc")
+]);
+```
 
-* Upgraded to Tailwind CSS v4 for better performance and efficiency.
-* Updated class usage to match the latest syntax and features.
-* Replaced deprecated class and optimized styles.
+### Image Upload
+```tsx
+import ImageUpload from "@/components/upload/ImageUpload";
 
-#### Next Steps
+function ProductForm() {
+  return (
+    <ImageUpload
+      onUploadComplete={(url) => console.log("Image uploaded:", url)}
+      onUploadProgress={(progress) => console.log(`Progress: ${progress}%`)}
+    />
+  );
+}
+```
 
-* Run npm install or yarn install to update dependencies.
-* Check for any style changes or compatibility issues.
-* Refer to the Tailwind CSS v4 [Migration Guide](https://tailwindcss.com/docs/upgrade-guide) on this release. if needed.
-* This update keeps the project up to date with the latest Tailwind improvements. 🚀
+## 🚀 Deployment
 
-### v2.0.0 (February 2025)
+### Build & Deploy
+```bash
+npm run build
+npm run start
+```
 
-A major update focused on Next.js 16 implementation and comprehensive redesign.
+### Production Environment
+Set these variables in your hosting platform:
+- All Firebase config variables
+- `NEXT_PUBLIC_ADMIN_EMAILS` (production admin emails)
+- `NEXT_PUBLIC_IMGBB_API_KEY` (production ImgBB key)
 
-#### Major Improvements
+### Security Notes
+- Admin access is completely hidden from customers
+- Uses discrete "Management Portal" terminology
+- No visible admin links in customer interface
+- Email-based admin authorization
 
-* Complete redesign using Next.js 16 App Router and React Server Components
-* Enhanced user interface with Next.js-optimized components
-* Improved responsiveness and accessibility
-* New features including collapsible sidebar, chat screens, and calendar
-* Redesigned authentication using Next.js App Router and server actions
-* Updated data visualization using ApexCharts for React
+## 🛠️ Development
 
-#### Breaking Changes
+### Project Structure
+```
+src/
+├── app/                 # Next.js App Router
+│   ├── (customer)/     # Customer storefront
+│   ├── admin/          # Admin dashboard
+│   └── api/            # API routes
+├── components/         # UI components
+├── context/           # React Context
+├── hooks/             # Custom hooks
+├── lib/               # Utilities
+└── layout/            # Layout components
+```
 
-* Migrated from Next.js 14 to Next.js 16
-* Chart components now use ApexCharts for React
-* Authentication flow updated to use Server Actions and middleware
+### Commands
+```bash
+npm run dev          # Development server
+npm run build        # Production build
+npm run lint         # Code linting
+```
 
-[Read more](https://tailadmin.com/docs/update-logs/nextjs) on this release.
+## 📞 Troubleshooting
 
-### v1.3.4 (July 01, 2024)
+- **Google Sign-In Error:** Enable Google provider in Firebase Console
+- **Image Upload Issues:** Check ImgBB API key
+- **Admin Access Denied:** Verify email in `NEXT_PUBLIC_ADMIN_EMAILS`
+- **Firestore Errors:** Deploy security rules via Firebase Console
 
-* Fixed JSvectormap rendering issues
+---
 
-### v1.3.3 (June 20, 2024)
+**MORENAL - Professional E-Commerce Platform** 🛍️
 
-* Fixed build error related to Loader component
-
-### v1.3.2 (June 19, 2024)
-
-* Added ClickOutside component for dropdown menus
-* Refactored sidebar components
-* Updated Jsvectormap package
-
-### v1.3.1 (Feb 12, 2024)
-
-* Fixed layout naming consistency
-* Updated styles
-
-### v1.3.0 (Feb 05, 2024)
-
-* Upgraded to Next.js 14
-* Added Flatpickr integration
-* Improved form elements
-* Enhanced multiselect functionality
-* Added default layout component
-
-## License
-
-TailAdmin Next.js Free Version is released under the MIT License.
-
-## Support
-If you find this project helpful, please consider giving it a star on GitHub. Your support helps us continue developing and maintaining this template.
+**Admin Access:** http://localhost:3000/management-login
