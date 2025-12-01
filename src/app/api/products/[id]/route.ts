@@ -10,10 +10,11 @@ import {
 // GET single product by ID
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const product = await getDocument(collections.products, params.id);
+    const { id } = await params;
+    const product = await getDocument(collections.products, id);
 
     if (!product) {
       return NextResponse.json(
@@ -38,9 +39,10 @@ export async function GET(
 // PUT update product
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
 
     const updates: any = {
@@ -65,7 +67,7 @@ export async function PUT(
     if (body.features) updates.features = body.features;
     if (body.specifications) updates.specifications = body.specifications;
 
-    await updateDocument(collections.products, params.id, updates);
+    await updateDocument(collections.products, id, updates);
 
     return NextResponse.json({
       success: true,
@@ -83,10 +85,11 @@ export async function PUT(
 // DELETE product
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await deleteDocument(collections.products, params.id);
+    const { id } = await params;
+    await deleteDocument(collections.products, id);
 
     return NextResponse.json({
       success: true,

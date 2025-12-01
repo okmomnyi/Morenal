@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
@@ -42,7 +42,8 @@ const defaultProduct = {
   },
 };
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [product, setProduct] = useState(defaultProduct);
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +59,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     const fetchProduct = async () => {
       try {
         // Fetch single product
-        const productResponse = await fetch(`/api/products/${params.id}`);
+        const productResponse = await fetch(`/api/products/${id}`);
         const productData = await productResponse.json();
 
         if (productData.success) {
@@ -72,7 +73,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
         if (allProductsData.success) {
           // Filter out current product and show up to 4 related items
           const related = allProductsData.products
-            .filter((p: any) => p.id !== params.id)
+            .filter((p: any) => p.id !== id)
             .slice(0, 4);
           setRelatedProducts(related);
         }
@@ -84,7 +85,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     };
 
     fetchProduct();
-  }, [params.id]);
+  }, [id]);
 
   const handleAddToCart = () => {
     addToCart(
